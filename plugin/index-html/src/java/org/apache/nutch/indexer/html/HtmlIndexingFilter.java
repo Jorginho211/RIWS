@@ -78,10 +78,15 @@ public class HtmlIndexingFilter implements IndexingFilter {
     @Override
     public NutchDocument filter(NutchDocument doc, String url, WebPage page) throws IndexingException {
     	if(url.contains("/feria/")){
-    		LOG.info("\n\nTitle: " + url + "\n\n");
+    		LOG.info("\n\nUrl: " + url + "\n\n");
         	String html = convertByteBufferToString(page.getContent());
     		filterTitle(doc, html);
-    		addRawContent(doc, page, url);
+    		filterFecha(doc, html);
+    		filterHora(doc, html);
+    		filterLocalizacion(doc, html);
+    		filterLugar(doc,html);
+    		filterOrganizacion(doc, html);
+    		filterDescripcion(doc, html);
             return doc;
     	}
     	return null;
@@ -103,6 +108,42 @@ public class HtmlIndexingFilter implements IndexingFilter {
     	doc.add("title", title);
     }
     
+    private void filterFecha(NutchDocument doc, String html){
+    	
+    }
+    
+    private void filterHora(NutchDocument doc, String html){
+    	
+    }
+    
+    private void filterLugar(NutchDocument doc, String html){
+    	Pattern pattern = Pattern.compile("Lugar:&nbsp;</div>(<div|<a|</a|[^<])*</div>");
+    	Matcher matcher = pattern.matcher(html);
+    	
+    	String lugar = "";
+    	if(matcher.find()){
+    		lugar = matcher.group(0);
+    		lugar = lugar.replace("Lugar:&nbsp;</div>", "");
+    		lugar = lugar.replaceAll("<[^>]*>", "");
+    		lugar = lugar.trim();
+    		
+    		LOG.info("\n\nLugar: " + lugar + "\n\n");
+    	}
+    	doc.add("lugar", lugar);
+    }
+    
+    private void filterLocalizacion(NutchDocument doc, String html){
+    	
+    }
+    
+    private void filterOrganizacion(NutchDocument doc, String html){
+    	
+    }
+    
+    private void filterDescripcion(NutchDocument doc, String html){
+    	
+    }
+    
     private String convertByteBufferToString(ByteBuffer contentPage){
     	String data = "";
     	if (contentPage != null) {
@@ -116,26 +157,9 @@ public class HtmlIndexingFilter implements IndexingFilter {
             data = StringUtil.cleanField(data);
         }
     	
+    	data = data.replaceAll("\\s{2,}", "");
+    	data = data.replaceAll("\\n+", "");
     	return data;
-    }
-
-
-    private NutchDocument addRawContent(NutchDocument doc, WebPage page, String url) {
-        ByteBuffer raw = page.getContent();
-        if (raw != null) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Html indexing for: " + url.toString());
-            }
-            ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(raw.array(), raw.arrayOffset() + raw.position(), raw.remaining());
-            Scanner scanner = new Scanner(arrayInputStream);
-            scanner.useDelimiter("\\Z");//To read all scanner content in one String
-            String data = "";
-            if (scanner.hasNext()) {
-                data = scanner.next();
-            }
-            doc.add("rawcontent", StringUtil.cleanField(data));
-        }
-        return doc;
     }
 
     public void addIndexBackendOptions(Configuration conf) {
