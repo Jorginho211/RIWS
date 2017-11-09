@@ -53,6 +53,8 @@ import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.crypto.provider.DESCipher;
+
 
 /**
  * Add HTML of page the document element so it can be indexed in scheme.xml
@@ -113,7 +115,19 @@ public class HtmlIndexingFilter implements IndexingFilter {
     }
     
     private void filterHora(NutchDocument doc, String html){
+    	Pattern pattern = Pattern.compile("Hora:&nbsp;</div>(<a|</a|[^<])*</div>");
+    	Matcher matcher = pattern.matcher(html);
     	
+    	String hora = "";
+    	if(matcher.find()){
+    		hora = matcher.group(0);
+    		hora = hora.replace("Hora:&nbsp;", "");
+    		hora = hora.replaceAll("<[^>]*>", "");
+    		hora = hora.trim();
+    		
+    		LOG.info("\n\nHora: " + hora + "\n\n");
+    	}
+    	//doc.add("hora", hora);
     }
     
     private void filterLugar(NutchDocument doc, String html){
@@ -129,7 +143,7 @@ public class HtmlIndexingFilter implements IndexingFilter {
     		
     		LOG.info("\n\nLugar: " + lugar + "\n\n");
     	}
-    	doc.add("lugar", lugar);
+    	//doc.add("lugar", lugar);
     }
     
     private void filterLocalizacion(NutchDocument doc, String html){
@@ -141,7 +155,21 @@ public class HtmlIndexingFilter implements IndexingFilter {
     }
     
     private void filterDescripcion(NutchDocument doc, String html){
+    	Pattern pattern = Pattern.compile("Descripcion</legend>.*</fieldset>");
+    	Matcher matcher = pattern.matcher(html);
     	
+    	String descripcion = "";
+    	if(matcher.find()){
+    		descripcion = matcher.group(0);
+    		descripcion = descripcion.replaceAll("</fieldset>.*", "");
+    		descripcion = descripcion.replace("Descripcion</legend>", "");
+    		descripcion = descripcion.replaceAll("</p>", " ");
+    		descripcion = descripcion.replaceAll("<[^>]*>", "");
+    		descripcion = descripcion.trim();
+    		
+    		LOG.info("\n\nDescripcion: " + descripcion + "\n\n");
+    	}
+    	//doc.add("descripcion", descripcion);
     }
     
     private String convertByteBufferToString(ByteBuffer contentPage){
@@ -157,7 +185,7 @@ public class HtmlIndexingFilter implements IndexingFilter {
             data = StringUtil.cleanField(data);
         }
     	
-    	data = data.replaceAll("\\s{2,}", "");
+    	data = data.replaceAll("\\s{2,}", " ");
     	data = data.replaceAll("\\n+", "");
     	return data;
     }
