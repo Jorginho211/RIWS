@@ -1,19 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.nutch.indexer.html;
 
 import java.util.Scanner;
@@ -56,19 +40,10 @@ import org.slf4j.LoggerFactory;
 import com.sun.crypto.provider.DESCipher;
 
 
-/**
- * Add HTML of page the document element so it can be indexed in scheme.xml
- *
- * @author Mohamed Meabed <mo.meabed@gmail.com>
- */
-
 public class HtmlIndexingFilter implements IndexingFilter {
     public static final Logger LOG = LoggerFactory.getLogger(HtmlIndexingFilter.class);
     private Configuration conf;
 
-    /**
-     * Get the MimeTypes resolver instance.
-     */
     private MimeUtil MIME;
 
     private static Collection<WebPage.Field> FIELDS = new HashSet<WebPage.Field>();
@@ -111,6 +86,32 @@ public class HtmlIndexingFilter implements IndexingFilter {
     }
     
     private void filterFecha(NutchDocument doc, String html){
+		Pattern pattern = Pattern.compile("<span class=\"date-display-start\">[^<]*</span>");
+    	Matcher matcher = pattern.matcher(html);
+    	
+    	String data = "";
+    	if(matcher.find()){
+    		data = matcher.group(0);
+    		data = data.replace("<span class=\"date-display-start\">", "");
+    		data = data.replace("</span>", "");
+    		
+    		LOG.info("\n\nData: " + data + "\n\n");
+    	}
+    	
+    	pattern = Pattern.compile("<span class=\"date-display-end\">[^<]*</span>");
+    	matcher = pattern.matcher(html);
+    	
+    	String data2 = "";
+    	if(matcher.find()){
+    		data2 = matcher.group(0);
+    		data2 = data2.replace("<span class=\"date-display-end\">", "");
+    		data2 = data2.replace("</span>", "");
+    		
+    		LOG.info("\n\nData2: " + data2 + "\n\n");
+    	}
+    	
+    	doc.removeField("fecha");
+    	doc.add("fecha", data + " - " + data2);
     	
     }
     
@@ -127,7 +128,7 @@ public class HtmlIndexingFilter implements IndexingFilter {
     		
     		LOG.info("\n\nHora: " + hora + "\n\n");
     	}
-    	//doc.add("hora", hora);
+    	doc.add("hora", hora);
     }
     
     private void filterLugar(NutchDocument doc, String html){
@@ -143,15 +144,44 @@ public class HtmlIndexingFilter implements IndexingFilter {
     		
     		LOG.info("\n\nLugar: " + lugar + "\n\n");
     	}
-    	//doc.add("lugar", lugar);
+    	doc.add("lugar", lugar);
     }
     
     private void filterLocalizacion(NutchDocument doc, String html){
+    	Pattern pattern = Pattern.compile("Localidade:&nbsp;</div>.*");
+    	Matcher matcher = pattern.matcher(html);
     	
+    	String loc = "";
+    	if(matcher.find()){
+    		loc = matcher.group(0);
+    		loc = loc.replace("Localidade:&nbsp;</div>", "");
+    		loc = loc.replaceAll("</ul>.*", "");
+    		loc = loc.replaceAll("<[^>]*>", "");
+    		loc = loc.replaceAll("›", " ");
+    		
+    		LOG.info("\n\nLocalizacion: " + loc + "\n\n");
+    	}
+    	doc.removeField("localizacion");
+    	doc.add("localizacion", loc);
     }
     
     private void filterOrganizacion(NutchDocument doc, String html){
+		
+		Pattern pattern = Pattern.compile("Organiza:&nbsp;</div>.*");
+    	Matcher matcher = pattern.matcher(html);
     	
+    	String org = "";
+    	if(matcher.find()){
+    		org = matcher.group(0);
+    		org = org.replace("Organiza:&nbsp;</div>", "");
+    		org = org.replaceAll("</div.*", "");
+    		org = org.replaceAll("<[^>]*>", "");
+    		
+    		LOG.info("\n\nOrganizacion: " + org + "\n\n");
+    	}
+    	doc.removeField("organizacion");
+    	doc.add("organizacion", org);
+           
     }
     
     private void filterDescripcion(NutchDocument doc, String html){
@@ -169,7 +199,7 @@ public class HtmlIndexingFilter implements IndexingFilter {
     		
     		LOG.info("\n\nDescripcion: " + descripcion + "\n\n");
     	}
-    	//doc.add("descripcion", descripcion);
+    	doc.add("descripcion", descripcion);
     }
     
     private String convertByteBufferToString(ByteBuffer contentPage){
@@ -177,7 +207,7 @@ public class HtmlIndexingFilter implements IndexingFilter {
     	if (contentPage != null) {
             ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(contentPage.array(), contentPage.arrayOffset() + contentPage.position(), contentPage.remaining());
             Scanner scanner = new Scanner(arrayInputStream);
-            scanner.useDelimiter("\\Z");//To read all scanner content in one String
+            scanner.useDelimiter("\\Z");
             
             if (scanner.hasNext()) {
                 data = scanner.next();

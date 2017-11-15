@@ -358,6 +358,14 @@
     <!-- fields for tld plugin -->    
     <field name="tld" type="string" stored="false" indexed="false"/>
     <field name="rawcontent" type="text_general" stored="true" indexed="true" multiValued="false"/>
+    
+    <field name="fecha" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="localizacion" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="hora" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="lugar" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="descripcion" type="string" stored="true" indexed="true" multiValued="false"/>
+    <field name="organizacion" type="string" stored="true" indexed="true" multiValued="false"/>
+    
  </fields>
  <uniqueKey>id</uniqueKey>
  <defaultSearchField>text</defaultSearchField>
