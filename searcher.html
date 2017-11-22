@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+ <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+</head>
+<body>
+
+<div class="page-header" style="text-align: center"> <h1>Buscador de Ferias en Galicia</h1></div>
+<div class="container" style="margin-top:100px;">
+	<form>
+		<div class="row">
+		<div class="col-xs-10">
+		  <div class="form-group">
+			<label for="Query">Query:</label>
+			<input type="text" class="form-control" id="query">
+		  </div>
+	  </div>
+	  <div class="col-xs-2">
+	  <label>
+	  Selecciona el campo:
+	  </label>
+	   <select id="selectsearch">
+		  <option value="descripcion">Descripción</option>
+		  <option value="lugar">Lugar</option>
+		  <option value="hora">Hora</option>
+		  <option value="titulo">Título</option>
+		  <option value="fecha">Fecha</option>
+		  <option value="localizacion">Localización</option>
+		  <option value="organizacion">Organización</option>
+		</select> 
+	  </div>
+	  </div>
+	  <div class="row" style="text-align: center">
+	  <button style="" id="buttonConfirm" type="button" class="btn btn-default">Buscar</button>
+	  </div>
+	  <div id="result">
+	  
+	  </div>
+	</form> 
+</div>
+
+
+<script>
+	
+
+var parseFeiras = function(feiras){
+	var feirastot = [];
+	console.log(feiras);
+	for (var i=0; i<feiras.response.numFound; i++){
+		var aux = feiras.response.docs[i];
+		if(aux)
+		feirastot.push({descripcion:aux.descripcion, fecha:aux.fecha, hora:aux.hora, localizacion:aux.localizacion, lugar:aux.lugar, organizacion:aux.organizacion, titulo: aux.title[0], url: aux.url})
+	}
+	return feirastot;
+}
+
+var showFeiras = function(feiras){
+	var html = "<div>";
+	for(var i=0; i<feiras.length; i++){
+	var textAct = "<div style=\"margin-top:50px\"> <div>"+feiras[i].titulo+"</div> <div>"+ feiras[i].descripcion +"</div> <div>"+ feiras[i].fecha +"</div> <div>"+ feiras[i].hora +"</div> <div>"+ feiras[i].localizacion +"</div> <div>"+ feiras[i].lugar +"</div> <div>"+ feiras[i].organizacion +"</div> <div>"+ feiras[i].url +"</div></div>"
+	html = html+textAct;
+	}
+	html=html+"</div>"
+	$("#result").html(html);
+}
+
+
+$("#buttonConfirm").click(function(){
+	if($("#query").val()!="")
+		var query= "http://localhost:8983/solr/query?q=" + $("#selectsearch").val() +":*"+ $("#query").val() + "*";
+	else
+		var query= "http://localhost:8983/solr/query?q=" + $("#selectsearch").val() +":*";
+	console.log(query);
+	$.ajax({
+     url: query,
+	 crossDomain: true,
+     success: function (data) {
+           showFeiras(parseFeiras(data));
+     },
+     dataType: 'json'
+});
+	
+});
+
+</script>
+</body>
+
+</html>
